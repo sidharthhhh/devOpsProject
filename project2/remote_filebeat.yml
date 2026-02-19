@@ -1,0 +1,54 @@
+filebeat.inputs:
+- type: filestream
+  id: apache-access-filestream
+  enabled: true
+  paths:
+    - /var/log/apache2/access.log*
+    - /var/log/httpd/access_log*
+  prospector.scanner.exclude_files: ['.gz$']
+  fields:
+    event.dataset: apache.access
+
+- type: filestream
+  id: apache-error-filestream
+  enabled: true
+  paths:
+    - /var/log/apache2/error.log*
+    - /var/log/httpd/error_log*
+  prospector.scanner.exclude_files: ['.gz$']
+  fields:
+    event.dataset: apache.error
+
+filebeat.config.modules:
+  path: ${path.config}/modules.d/*.yml
+  reload.enabled: false
+
+setup.template.settings:
+  index.number_of_shards: 1
+
+# ================================== Outputs ===================================
+
+# ---------------------------- Elasticsearch Output ----------------------------
+output.elasticsearch:
+  # Array of hosts to connect to.
+  # REPLACE 'YOUR_LOCAL_IP' with the public IP or VPN IP of your Windows machine
+  hosts: ["YOUR_LOCAL_IP:9200"]
+
+  # Protocol - http (default) or https
+  protocol: "http"
+
+  # Authentication credentials - not needed since xpack.security is false
+  # username: "elastic"
+  # password: "changeme"
+
+# ================================= Dashboards =================================
+setup.kibana:
+  # REPLACE 'YOUR_LOCAL_IP' with the public IP or VPN IP of your Windows machine
+  host: "YOUR_LOCAL_IP:5601"
+
+processors:
+  - add_host_metadata:
+      when.not.contains.tags: forwarded
+  - add_cloud_metadata: ~
+  - add_docker_metadata: ~
+  - add_kubernetes_metadata: ~
