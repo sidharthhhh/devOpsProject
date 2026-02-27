@@ -1,6 +1,6 @@
 const axios = require('axios');
 
-const API_URL = 'http://localhost:3000/api/todos';
+const API_URL = 'http://localhost:4000/api/todos';
 
 const sampleTodos = [
     { title: 'Learn Elasticsearch Basics', description: 'Understand indices and documents', priority: 'high', status: 'completed' },

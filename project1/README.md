@@ -8,9 +8,11 @@ This is a REST API for a Todo application. Unlike a standard app that just store
 
 **Key Features:**
 - **Node.js + Express**: Core API
-- **Elasticsearch**: Stores robust structured event logs
-- **Kibana**: Visualizes traffic, errors, and performance
+- **Elastic APM**: Auto-instruments the application and sends metrics to APM Server
+- **Kibana**: Visualizes traffic, errors, and performance with [Pre-built Node.js Dashboards](./prebuild.md)
 - **Docker Compose**: Orchestrates the Elastic Stack
+
+> **👉 Note:** Check out [prebuild.md](./prebuild.md) to learn how to access the **Pre-built Node.js APM Dashboard** without manually creating visualizations!
 
 ---
 

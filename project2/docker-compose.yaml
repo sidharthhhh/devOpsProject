@@ -5,7 +5,8 @@ services:
     container_name: elasticsearch_project2
     environment:
       - discovery.type=single-node
-      - xpack.security.enabled=false
+      - xpack.security.enabled=true
+      - ELASTIC_PASSWORD=changeme
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     ports:
       - "9200:9200"
@@ -21,11 +22,25 @@ services:
       - "5601:5601"
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=kibana_system
+      - ELASTICSEARCH_PASSWORD="Dbh5nS0df5MHa1Z*oOlk"
     depends_on:
       - elasticsearch
     networks:
       - elk_network
 
+  apm-server:
+    image: docker.elastic.co/apm/apm-server:8.11.1
+    container_name: apm_server_project2
+    ports:
+      - "8200:8200"
+    command: >
+      apm-server -e -E output.elasticsearch.hosts=["http://elasticsearch:9200"] -E output.elasticsearch.username="elastic" -E output.elasticsearch.password="changeme" -E apm-server.kibana.enabled=true -E apm-server.kibana.host="http://kibana:5601" -E apm-server.kibana.username="elastic" -E apm-server.kibana.password="changeme"
+    depends_on:
+      - elasticsearch
+      - kibana
+    networks:
+      - elk_network
 volumes:
   es_data:
     driver: local

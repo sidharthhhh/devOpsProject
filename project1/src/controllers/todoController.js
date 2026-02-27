@@ -62,3 +62,21 @@ exports.deleteTodo = async (req, res, next) => {
         next(error);
     }
 };
+
+exports.generateError = async (req, res, next) => {
+    try {
+        const errorMsg = "This is a custom internally generated 500 error for APM testing!";
+        const err = new Error(errorMsg);
+
+        // Manually capture the error with APM to avoid noisy Express stack traces
+        const apm = require('elastic-apm-node');
+        if (apm.isStarted && apm.isStarted()) {
+            apm.captureError(err);
+        }
+
+        // Just send the response directly
+        res.status(500).json({ error: "Internal Server Error", message: errorMsg });
+    } catch (error) {
+        next(error);
+    }
+};
