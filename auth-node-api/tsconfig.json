@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",                                  
+    "module": "CommonJS",                                
+    "moduleResolution": "node",                       
+    "esModuleInterop": true,                             
+    "forceConsistentCasingInFileNames": true,            
+    "strict": true,                                      
+    "skipLibCheck": true,
+    
+    // Make sure this is either set to false, or deleted entirely
+    "verbatimModuleSyntax": false 
+  }
+}
