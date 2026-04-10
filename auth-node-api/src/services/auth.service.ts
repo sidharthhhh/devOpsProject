@@ -1,39 +1,41 @@
-import pool from "../config/db";
-import { User } from "../types/user";
+import bcrypt from "bcryptjs";
+import { generateToken } from "../utils/jwt";
+import { generateMemberId } from "../utils/memberId";
+import { findRoleByName } from "../repositories/role.repository";
+import { createUser, findUserByEmail } from "../repositories/user.repository";
 
-export const findUserByEmail = async (email: string) => {
-  const [rows] = await pool.query(
-    "SELECT * FROM users WHERE email = ?",
-    [email]
-  );
-
-  return (rows as User[])[0];
-};
-
-export const createUser = async (email: string, password: string) => {
-  const [result]: any = await pool.query(
-    "INSERT INTO users (email, password) VALUES (?, ?)",
-    [email, password]
-  );
-
-  return result.insertId;
-};
-
-export const getUserById = async (id: number) => {
-  const [rows]: any = await pool.query(
-    "SELECT id, email, password FROM users WHERE id = ?",
-    [id]
-  );
-
-  return rows[0];
-};
-
-export const updateUserPassword = async (
-  userId: number,
-  hashedPassword: string
+export const registerUser = async (
+ email: string,
+ password: string,
+ role: string
 ) => {
-  await pool.query(
-    "UPDATE users SET password = ? WHERE id = ?",
-    [hashedPassword, userId]
-  );
+
+ const roleData = await findRoleByName(role);
+
+ if (!roleData) throw new Error("Invalid role");
+
+ const hashedPassword = await bcrypt.hash(password,10);
+
+ const memberId = generateMemberId(roleData.prefix, 0);
+
+ await createUser(memberId,email,hashedPassword,roleData.id);
+
+ return { memberId };
+
+};
+
+export const loginUser = async (email: string,password: string) => {
+
+ const user = await findUserByEmail(email);
+
+ if (!user) throw new Error("User not found");
+
+ const match = await bcrypt.compare(password,user.password);
+
+ if (!match) throw new Error("Invalid password");
+
+ const token = generateToken(user.id,user.role);
+
+ return { token,user };
+
 };

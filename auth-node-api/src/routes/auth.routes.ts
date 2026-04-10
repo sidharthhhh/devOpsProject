@@ -1,24 +1,29 @@
-import { Router } from "express";
+import { Router, Response } from "express";
 import {
-  register,
-  login,
-  logout,
-  changePassword,
-  getCurrentUser
+ register,
+ login
 } from "../controllers/auth.controller";
 
-
-
-import { authenticate } from "../middleware/auth.middleware";
+import { authenticate, AuthRequest } from "../middleware/auth.middleware";
+import { authorizeRole } from "../middleware/role.middleware";
 
 const router = Router();
 
-router.post("/register", register);
-router.post("/login", login);
-router.post("/logout", logout);
-router.patch("/change-password", authenticate, changePassword);
+router.post("/register",register);
 
-// protected route
-router.get("/me", authenticate, getCurrentUser);
+router.post("/login",login);
+
+router.get("/me",authenticate,(req: AuthRequest,res: Response)=>{
+ res.json(req.user);
+});
+
+router.get(
+ "/admin/test",
+ authenticate,
+ authorizeRole("admin"),
+ (req,res)=>{
+  res.json({message:"Admin route"});
+ }
+);
 
 export default router;
