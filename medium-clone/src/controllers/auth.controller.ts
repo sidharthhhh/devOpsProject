@@ -35,4 +35,17 @@ export class AuthController {
 			next(error);
 		}
 	};
+
+	/**
+	 * POST /api/v1/auth/logout
+	 */
+	logout = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+		try {
+			const { token } = req.body;
+			await this.service.logout(token);
+			sendSuccess(res, null, 'Logged out successfully');
+		} catch (error) {
+			next(error);
+		}
+	};
 }

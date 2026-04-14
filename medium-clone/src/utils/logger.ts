@@ -32,3 +32,38 @@ export const logger = winston.createLogger({
     }),
   ],
 });
+
+/**
+ * Security event logging functions
+ */
+export const securityLogger = {
+  logRegistration: (email: string, username: string, success: boolean, metadata?: any) => {
+    logger.info('User registration attempt', {
+      event: 'registration',
+      email,
+      username,
+      success,
+      timestamp: new Date().toISOString(),
+      ...metadata,
+    });
+  },
+
+  logLogin: (email: string, success: boolean, metadata?: any) => {
+    logger.info('User login attempt', {
+      event: 'login',
+      email,
+      success,
+      timestamp: new Date().toISOString(),
+      ...metadata,
+    });
+  },
+
+  logLogout: (userId: number, metadata?: any) => {
+    logger.info('User logout', {
+      event: 'logout',
+      userId,
+      timestamp: new Date().toISOString(),
+      ...metadata,
+    });
+  },
+};
