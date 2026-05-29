@@ -425,6 +425,135 @@ Response (401):
 
 ---
 
+## 6. Initialize Seats (Production Setup)
+
+**Endpoint:** `POST /initialize-seats`
+
+**Description:** Create 20 vacant seats in the database (for production deployment)
+
+**Headers:**
+```
+None required
+```
+
+**cURL Command:**
+```bash
+curl -X POST http://localhost:8080/initialize-seats
+```
+
+**Expected Response (201 Created):**
+```json
+{
+  "success": true,
+  "message": "20 vacant seats created successfully",
+  "seatsCreated": 20,
+  "seats": [
+    {
+      "id": 1,
+      "name": null,
+      "isbooked": 0,
+      "user_id": null,
+      "booked_at": null
+    },
+    // ... 19 more seats
+  ]
+}
+```
+
+**Error Cases:**
+
+**Seats Already Exist:**
+```bash
+# Try to initialize when seats already exist
+curl -X POST http://localhost:8080/initialize-seats
+```
+Response (400):
+```json
+{
+  "error": "Seats already initialized",
+  "code": "SEATS_EXIST",
+  "existingCount": 20,
+  "message": "Database already has seats. Use DELETE /reset-seats to clear first."
+}
+```
+
+---
+
+## 7. Reset Seats (Clear All Seats)
+
+**Endpoint:** `DELETE /reset-seats`
+
+**Description:** Delete all seats from the database (use with caution!)
+
+**Headers:**
+```
+None required
+```
+
+**cURL Command:**
+```bash
+curl -X DELETE http://localhost:8080/reset-seats
+```
+
+**Expected Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "All seats deleted",
+  "deletedCount": 20
+}
+```
+
+**⚠️ WARNING:** This will delete ALL seats including booked ones. Use only for testing or resetting the system.
+
+---
+
+## Production Setup Flow
+
+When deploying to production without Docker initialization:
+
+### Step 1: Deploy Application
+Deploy your application to production server
+
+### Step 2: Initialize Database Schema
+Run the SQL from `init.sql` manually or use a migration tool:
+```sql
+CREATE TABLE IF NOT EXISTS users (
+    id SERIAL PRIMARY KEY,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+
+CREATE TABLE IF NOT EXISTS seats (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255),
+    isbooked INT DEFAULT 0,
+    user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    booked_at TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_seats_user_id ON seats(user_id);
+```
+
+### Step 3: Initialize Seats
+```bash
+curl -X POST https://your-production-url.com/initialize-seats
+```
+
+This will create 20 vacant seats ready for booking.
+
+### Step 4: Verify
+```bash
+curl https://your-production-url.com/seats
+```
+
+You should see 20 vacant seats.
+
+---
+
 ## Complete Testing Flow
 
 Here's a complete flow to test all endpoints in sequence:

@@ -155,6 +155,64 @@ app.get("/seats", async (req, res) => {
   res.send(result.rows);
 });
 
+// POST /initialize-seats - Create 20 vacant seats (for production setup)
+app.post("/initialize-seats", async (req, res) => {
+  try {
+    // Check if seats already exist
+    const existingSeats = await pool.query("SELECT COUNT(*) FROM seats");
+    const count = parseInt(existingSeats.rows[0].count);
+
+    if (count > 0) {
+      return res.status(400).json({
+        error: "Seats already initialized",
+        code: "SEATS_EXIST",
+        existingCount: count,
+        message: "Database already has seats. Use DELETE /reset-seats to clear first."
+      });
+    }
+
+    // Insert 20 vacant seats
+    await pool.query(`
+      INSERT INTO seats (isbooked)
+      SELECT 0 FROM generate_series(1, 20)
+    `);
+
+    const result = await pool.query("SELECT * FROM seats ORDER BY id");
+
+    res.status(201).json({
+      success: true,
+      message: "20 vacant seats created successfully",
+      seatsCreated: 20,
+      seats: result.rows
+    });
+  } catch (error) {
+    console.error("Initialize seats error:", error);
+    res.status(500).json({
+      error: "Internal server error",
+      code: "SERVER_ERROR"
+    });
+  }
+});
+
+// DELETE /reset-seats - Clear all seats (use with caution!)
+app.delete("/reset-seats", async (req, res) => {
+  try {
+    const result = await pool.query("DELETE FROM seats");
+    
+    res.json({
+      success: true,
+      message: "All seats deleted",
+      deletedCount: result.rowCount
+    });
+  } catch (error) {
+    console.error("Reset seats error:", error);
+    res.status(500).json({
+      error: "Internal server error",
+      code: "SERVER_ERROR"
+    });
+  }
+});
+
 // GET /my-bookings - Get authenticated user's bookings
 app.get("/my-bookings", authenticateToken, async (req, res) => {
   try {
